@@ -1,0 +1,28 @@
+Higgsfield Creative Kit
+Built by Selr AI <luke@selrai.com.au>
+
+Distributed under the MIT License (see LICENSE in the vendored prompt skill folder).
+
+================================================================================
+
+This kit vendors the following third-party work:
+
+  higgsfield-ai-prompt-skill
+  Copyright (c) 2026 O-Side Media
+  https://github.com/OSideMedia/higgsfield-ai-prompt-skill
+  Licensed under the MIT License — original LICENSE file preserved at:
+    skills/higgsfield/LICENSE
+
+The OSideMedia prompt skill provides the 20 Higgsfield sub-skills, the MCSLA
+prompting formula, the 10 genre templates, and the validation scripts inside
+skills/higgsfield/. We have vendored it unchanged to insulate kit recipients
+from upstream churn.
+
+================================================================================
+
+The connector skill (skills/higgsfield-connector/) and the Selr-AI-tuned
+templates (templates/selrai-*.md) and docs (docs/*) are original Selr AI work,
+also released under MIT.
+
+If this kit's install flow breaks because Higgsfield's MCP API changed, please
+report the issue at: luke@selrai.com.au

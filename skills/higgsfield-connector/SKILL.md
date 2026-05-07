@@ -1,6 +1,6 @@
 ---
 name: higgsfield-connector
-description: "Fully autonomous Higgsfield AI connector for Claude Code. Adds the official Higgsfield remote MCP server (https://mcp.higgsfield.ai), drives the OAuth sign-in once, verifies the connection, then loads the bundled Higgsfield prompt cookbook + Selr AI templates. The user's only action is signing in to their Higgsfield account once. Zero copy-paste, zero env vars, zero typing. Use when the user says 'connect Higgsfield', 'set up Higgsfield', 'install the Higgsfield kit', 'help me make AI ads', or 'I want to generate images and videos'."
+description: "Fully autonomous Higgsfield AI connector for Claude Code. Adds the official Higgsfield remote MCP server (https://mcp.higgsfield.ai/mcp), drives the OAuth sign-in once, verifies the connection, then loads the bundled Higgsfield prompt cookbook + Selr AI templates. The user's only action is signing in to their Higgsfield account once. Zero copy-paste, zero env vars, zero typing. Use when the user says 'connect Higgsfield', 'set up Higgsfield', 'install the Higgsfield kit', 'help me make AI ads', or 'I want to generate images and videos'."
 allowed-tools: Bash, Read, Write, Edit
 metadata:
   category: Creative & AI Generation
@@ -17,7 +17,7 @@ metadata:
 >
 > **No API keys.** No environment variables. No copy-paste. No JSON config edits.
 >
-> Auth is OAuth via the official remote MCP server at `https://mcp.higgsfield.ai`. One browser sign-in, then the agent verifies and loads templates.
+> Auth is OAuth via the official remote MCP server at `https://mcp.higgsfield.ai/mcp`. One browser sign-in, then the agent verifies and loads templates.
 
 ---
 
@@ -94,7 +94,7 @@ Send ONE message. Wait for a single yes/no.
 Run silently:
 
 ```bash
-claude mcp add --transport http higgsfield https://mcp.higgsfield.ai --scope user
+claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp --scope user
 ```
 
 Why `--scope user`: the connection persists across all of the user's projects, not just the current folder.
@@ -105,25 +105,21 @@ If the command errors, retry once with `--scope local`. If still fails, surface 
 
 ## Phase 3: OAuth Sign-In (the only user moment)
 
+Right after `claude mcp add` runs, the server's status will read **"Needs authentication"**. That's expected — Claude Code will trigger an OAuth browser flow the next time the user (or you) actually invokes a Higgsfield tool.
+
 Tell the user:
 
-> **"Adding it now. A browser window will open in a few seconds — sign in to Higgsfield (use Google for the fastest path). When you see 'Connection successful' in the browser, come back and tell me 'done'."**
+> **"Adding it now. In a moment a browser window will open asking you to sign in to Higgsfield — use Google for the fastest path. When you see 'Connection successful' in the browser, come back and tell me 'done'."**
 
-Claude Code's MCP client triggers the OAuth flow automatically the first time a tool from the server is invoked. To trigger it deterministically:
-
-```bash
-# Force-touch the MCP server so OAuth fires now, not on first tool use
-claude mcp get higgsfield 2>&1 | head -20
-```
-
-If the OAuth window doesn't open within 10 seconds, fall back:
+Verify the registration, then trigger OAuth by asking Claude Code (in this session) to use any Higgsfield tool:
 
 ```bash
-# Manual OAuth touch via a no-op tool list
-echo "Triggering OAuth flow…"
+claude mcp get higgsfield
 ```
 
-…and instruct the user to ask Claude Code "list higgsfield models" — the first tool call always triggers OAuth if not yet authorised.
+If `Status: ! Needs authentication`, ask Claude Code in this session something like *"list the available Higgsfield models"*. The first tool call from the user's Claude Code (the same session, or a new one if the agent is running headless) will open the OAuth window.
+
+If the browser window doesn't open after 30 seconds, ask the user to fully quit and reopen Claude Code, then ask the same question again — some Claude Code builds need a fresh launch to register the new HTTP MCP.
 
 Wait for the user to confirm they're signed in.
 
@@ -131,13 +127,15 @@ Wait for the user to confirm they're signed in.
 
 ## Phase 4: Restart Claude Code (only if needed)
 
-Most builds pick up the new MCP without restart. Some require it. Test with a no-op tool call:
+Most builds pick up the new MCP without restart. Some require it. Verify the entry is registered:
 
-```
-mcp__higgsfield__list_models  # or whichever tool exists, see Phase 5
+```bash
+claude mcp get higgsfield
 ```
 
-If the tool is not discoverable:
+Expected: `Status: ! Needs authentication` (the OAuth handshake hasn't fired yet — that's fine until Phase 5).
+
+If `claude mcp get higgsfield` errors with "MCP server not found":
 
 > **"One last step — fully quit Claude Code (Cmd+Q on Mac, close window AND tray icon on Windows) and reopen it. Tell me when you're back."**
 
@@ -147,21 +145,24 @@ If the tool IS discoverable, skip this phase entirely.
 
 ## Phase 5: Live Verification (silent)
 
-Call the real MCP server. Never report "done" before this succeeds.
+Confirm the MCP is fully wired. The exact tool name surface for Higgsfield's remote MCP is discovered at runtime — once OAuth completes, Claude Code exposes tools as `mcp__higgsfield__<name>`. Don't hardcode tool names; instead, verify by listing what's available.
 
+```bash
+claude mcp get higgsfield   # status should be "Connected", not "Needs authentication"
 ```
-# Replace with the actual tool name once verified — list_models, get_status, or similar
-mcp__higgsfield__list_models
-```
+
+Then ask Claude Code (in the user's session) something simple to exercise the connection:
+
+> *"Use Higgsfield to list the models you can access."*
 
 | Outcome | Action |
 |---|---|
-| Returns a list of models (Soul, Sora, Kling, etc.) | Success. Proceed to Phase 6. |
-| Tool not found | Phase 4 wasn't completed. Ask user to fully quit + reopen. |
-| OAuth error / 401 | The sign-in didn't stick. Re-run Phase 3. |
-| Network timeout | Retry once. If still failing, escalate. |
+| Claude lists Higgsfield models (Soul, Sora, Kling, Veo, etc.) | Success. Proceed to Phase 6. |
+| `Status: Needs authentication` | OAuth didn't complete. Re-run Phase 3. |
+| `Status: Failed to connect` | URL or network issue. Re-run `claude mcp add` and check that the URL ends in `/mcp`. |
+| Tool list empty | OAuth completed but no scopes granted — ask user to revoke + re-authorise from higgsfield.ai → Settings → Connected apps. |
 
-Capture the model list — surface a few model names in Phase 6 to prove the connection is real.
+Capture the returned model list — surface a few model names in Phase 6 to prove the connection is real.
 
 ---
 
@@ -210,9 +211,9 @@ If the user is on the free tier and asks for a heavy job (10+ video generations,
 | Symptom | Diagnosis | Fix |
 |---|---|---|
 | `claude mcp add` errors with `command not found` | Old Claude Code build | *"Update Claude Code from claude.ai/download and try again."* |
-| OAuth window doesn't open | Claude Code waiting for first tool call to trigger it | Run `mcp__higgsfield__list_models` to force the trigger |
+| OAuth window doesn't open | Claude Code waiting for first tool call to trigger it | Ask Claude in the user's session to "list Higgsfield models" — the first tool call triggers OAuth |
 | 401 on first tool call | OAuth didn't complete | Re-run sign-in. Browser may have blocked the popup. |
-| Tool not discoverable after restart | MCP entry didn't save | Re-run `claude mcp add --transport http higgsfield https://mcp.higgsfield.ai --scope user` |
+| Tool not discoverable after restart | MCP entry didn't save | Re-run `claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp --scope user` |
 | All generations return "rate limited" | Free tier exhausted | *"You've hit your free-tier cap. Higgsfield's billing page handles upgrades — I'll pause here."* |
 | Sora 2 / Veo 3 returns "model unavailable" | Plan tier doesn't include premium models | *"That model is on Higgsfield's higher plan. Want me to fall back to Kling or Seedance?"* |
 
@@ -226,7 +227,7 @@ Do NOT tell the user "done" until every box is ticked:
 - [ ] Phase 1: user said go
 - [ ] Phase 2: `claude mcp add` exited 0
 - [ ] Phase 3: user confirmed OAuth sign-in
-- [ ] Phase 4: `mcp__higgsfield__*` tools discoverable (restart if needed)
+- [ ] Phase 4: `claude mcp get higgsfield` shows `Status: Connected` (restart Claude Code if needed)
 - [ ] Phase 5: live `list_models` returned a non-empty model list
 - [ ] Phase 6: three starter prompts matched to user's business sent
 
@@ -234,7 +235,7 @@ Do NOT tell the user "done" until every box is ticked:
 
 ## Reference
 
-- **Official MCP server**: `https://mcp.higgsfield.ai`
+- **Official MCP server**: `https://mcp.higgsfield.ai/mcp`
 - **Higgsfield platform**: [higgsfield.ai](https://higgsfield.ai)
 - **MCP docs**: [higgsfield.ai/mcp](https://higgsfield.ai/mcp)
 - **Bundled prompt skill**: `~/.claude/skills/higgsfield/` (vendored from OSideMedia, MIT)

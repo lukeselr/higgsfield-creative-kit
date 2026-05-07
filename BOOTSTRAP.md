@@ -23,7 +23,7 @@ You are about to install the Higgsfield Creative Kit for me. Do these steps in o
 5. Run the smoke test: `bash /tmp/higgsfield-creative-kit/smoke-test.sh`. Confirm every line says `ok`.
 
 6. Now invoke the connector skill. Read `~/.claude/skills/higgsfield-connector/SKILL.md` and execute Phases 0..6 verbatim. The skill will:
-   - Run `claude mcp add --transport http higgsfield https://mcp.higgsfield.ai --scope user`
+   - Run `claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp --scope user`
    - Open a browser for me to sign in to Higgsfield once (Google sign-in is fastest)
    - Verify the MCP is live by listing models
    - Hand off three starter prompts matched to my business

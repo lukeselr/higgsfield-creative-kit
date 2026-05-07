@@ -6,7 +6,7 @@ Built by Selr AI for non-technical founders. Zero API keys. One browser sign-in.
 
 ## What's in here
 
-- **Connector skill** — autonomous OAuth installer for the official Higgsfield remote MCP at `https://mcp.higgsfield.ai`. Adds the connection, verifies it, hands off starter prompts.
+- **Connector skill** — autonomous OAuth installer for the official Higgsfield remote MCP at `https://mcp.higgsfield.ai/mcp`. Adds the connection, verifies it, hands off starter prompts.
 - **Prompt skill** — vendored from [OSideMedia/higgsfield-ai-prompt-skill](https://github.com/OSideMedia/higgsfield-ai-prompt-skill) under MIT. 20 sub-skills covering Soul ID, Cinema Studio 2.5/3.0/3.5, Seedance 2.0, Kling 3.0 Motion Control, MCSLA formula, and 10 genre templates.
 - **15 founder templates** — 8 image + 7 video, tuned for product, lifestyle, UGC, and ad use cases.
 - **Soul ID workflow doc** — train a consistent character once, generate dozens of on-brand visuals.

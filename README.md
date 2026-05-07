@@ -11,6 +11,8 @@ Built by Selr AI for non-technical founders. Zero API keys. One browser sign-in.
 - **15 founder templates** — 8 image + 7 video, tuned for product, lifestyle, UGC, and ad use cases.
 - **Soul ID workflow doc** — train a consistent character once, generate dozens of on-brand visuals.
 - **Cookbook** — distilled prompting playbook: image formula, motion formula, the seven hard rules, locked seeds, real-gear references.
+- **Full toolkit map** — every Higgsfield surface you can use: MCP tools, the 50+ one-click Apps, Cinema Studio, Lipsync Studio, Sketch-to-Video, Higgsfield Speak, Higgsfield Assist (GPT-5 copilot), the Chrome extension, and the mobile app.
+- **Getting-started playbook** — first 30 minutes: confirm install, train Soul ID, ship your first image, ship your first video.
 - **Pairing guide** — how to combine Higgsfield outputs with carousel generators, copywriting skills, and ad-creative workflows.
 
 ## Install
@@ -62,9 +64,11 @@ higgsfield-creative-kit/
     selrai-draw-to-video-product.md   # video
     selrai-recast-character-swap.md   # video
   docs/
-    soul-id-workflow.md
-    cookbook.md
-    pairing-with-other-skills.md
+    getting-started.md                # first 30 minutes after install
+    cookbook.md                       # prompting playbook
+    soul-id-workflow.md               # train your character once
+    full-toolkit-map.md               # every Higgsfield surface
+    pairing-with-other-skills.md      # combine with sister skills
 ```
 
 ## Pairing this kit with other skills
